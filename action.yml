@@ -10,6 +10,9 @@ inputs:
   path:
     description: 'The tape file path'
     default: ''
+  working-directory:
+    description: 'Working directory where the tape files are located'
+    default: ''
   token:
     description: Used to pull VHS from Github
     default: ${{ github.token }}

@@ -10,15 +10,20 @@ async function run(): Promise<void> {
   try {
     const version = core.getInput('version')
     const filePath = core.getInput('path')
+    const workingDirectory = core.getInput('working-directory')
 
     // Fail fast if file does not exist.
     if (filePath) {
-      if (!fs.existsSync(filePath)) {
-        core.error(`File ${filePath} does not exist`)
+      const resolvedPath = workingDirectory
+        ? path.join(workingDirectory, filePath)
+        : filePath
+
+      if (!fs.existsSync(resolvedPath)) {
+        core.error(`File ${resolvedPath} does not exist`)
       } else {
-        // Check that `filePath` is a file, and that we can read it.
-        fs.accessSync(filePath, fs.constants.F_OK)
-        fs.accessSync(filePath, fs.constants.R_OK)
+        // Check that `resolvedPath` is a file, and that we can read it.
+        fs.accessSync(resolvedPath, fs.constants.F_OK)
+        fs.accessSync(resolvedPath, fs.constants.R_OK)
       }
     }
 
@@ -38,7 +43,15 @@ async function run(): Promise<void> {
 
     if (filePath) {
       core.info('Running VHS')
-      await exec.exec(`${bin} ${filePath}`)
+
+      // Set the options with working directory if provided
+      const options: exec.ExecOptions = {}
+      if (workingDirectory) {
+        options.cwd = workingDirectory
+        core.info(`Using working directory: ${workingDirectory}`)
+      }
+
+      await exec.exec(`${bin} ${filePath}`, [], options)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

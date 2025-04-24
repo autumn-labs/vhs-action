@@ -22,23 +22,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -49,11 +39,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.install = install;
-exports.installTtyd = installTtyd;
-exports.installTtydBrewHead = installTtydBrewHead;
-exports.installLatestFfmpeg = installLatestFfmpeg;
-exports.installFfmpeg = installFfmpeg;
+exports.installFfmpeg = exports.installLatestFfmpeg = exports.installTtydBrewHead = exports.installTtyd = exports.install = void 0;
 const os = __importStar(__nccwpck_require__(857));
 const path = __importStar(__nccwpck_require__(6928));
 const fs = __importStar(__nccwpck_require__(9896));
@@ -70,9 +56,10 @@ function install() {
         return Promise.resolve();
     });
 }
+exports.install = install;
 function installTtyd(version) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
         if (!version) {
             version = 'latest';
         }
@@ -155,6 +142,7 @@ function installTtyd(version) {
         return Promise.reject(new Error(`Could not install ttyd`));
     });
 }
+exports.installTtyd = installTtyd;
 function installTtydBrewHead() {
     return __awaiter(this, void 0, void 0, function* () {
         // Install ttyd from source
@@ -183,6 +171,7 @@ function installTtydBrewHead() {
         return Promise.resolve();
     });
 }
+exports.installTtydBrewHead = installTtydBrewHead;
 function installLatestFfmpeg() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`Installing latest ffmpeg...`);
@@ -209,13 +198,26 @@ function installLatestFfmpeg() {
                     owner: 'BtbN',
                     repo: 'FFmpeg-Builds'
                 });
+                // First try to find the master build
                 for (const asset of release.data.assets) {
-                    // ffmpeg-n5.1-latest-linux64-gpl-5.1.tar.xz
-                    if (asset.name.startsWith('ffmpeg-n5.1') &&
-                        asset.name.includes('linux64-gpl-5.1') &&
+                    if (asset.name.startsWith('ffmpeg-master') &&
+                        asset.name.includes('linux64-gpl') &&
+                        !asset.name.includes('shared') &&
                         asset.name.endsWith('.tar.xz')) {
                         url = asset.browser_download_url;
                         break;
+                    }
+                }
+                // If master build not found, try to find any versioned build (e.g., ffmpeg-n6.1)
+                if (!url) {
+                    for (const asset of release.data.assets) {
+                        if (asset.name.startsWith('ffmpeg-n') &&
+                            asset.name.includes('linux64-gpl') &&
+                            !asset.name.includes('shared') &&
+                            asset.name.endsWith('.tar.xz')) {
+                            url = asset.browser_download_url;
+                            break;
+                        }
                     }
                 }
                 extract = tc.extractTar;
@@ -228,13 +230,26 @@ function installLatestFfmpeg() {
                     owner: 'BtbN',
                     repo: 'FFmpeg-Builds'
                 });
+                // First try to find the master build
                 for (const asset of release.data.assets) {
-                    // ffmpeg-n5.1-latest-linux64-gpl-5.1.tar.xz
-                    if (asset.name.startsWith('ffmpeg-n5.1') &&
-                        asset.name.includes('win64-gpl-5.1') &&
+                    if (asset.name.startsWith('ffmpeg-master') &&
+                        asset.name.includes('win64-gpl') &&
+                        !asset.name.includes('shared') &&
                         asset.name.endsWith('.zip')) {
                         url = asset.browser_download_url;
                         break;
+                    }
+                }
+                // If master build not found, try to find any versioned build (e.g., ffmpeg-n6.1)
+                if (!url) {
+                    for (const asset of release.data.assets) {
+                        if (asset.name.startsWith('ffmpeg-n') &&
+                            asset.name.includes('win64-gpl') &&
+                            !asset.name.includes('shared') &&
+                            asset.name.endsWith('.zip')) {
+                            url = asset.browser_download_url;
+                            break;
+                        }
                     }
                 }
                 extract = tc.extractZip;
@@ -274,6 +289,7 @@ function installLatestFfmpeg() {
         return Promise.reject(new Error('Failed to install ffmpeg'));
     });
 }
+exports.installLatestFfmpeg = installLatestFfmpeg;
 function installFfmpeg() {
     return __awaiter(this, void 0, void 0, function* () {
         const osPlatform = os.platform();
@@ -299,6 +315,7 @@ function installFfmpeg() {
         return Promise.resolve();
     });
 }
+exports.installFfmpeg = installFfmpeg;
 
 
 /***/ }),
@@ -324,23 +341,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -351,7 +358,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.install = install;
+exports.install = void 0;
 const os = __importStar(__nccwpck_require__(857));
 const path = __importStar(__nccwpck_require__(6928));
 const fs = __importStar(__nccwpck_require__(1943));
@@ -498,6 +505,7 @@ function install() {
         }
     });
 }
+exports.install = install;
 function installFonts(dir) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = (yield fs.readdir(dir)).filter(file => file.endsWith('.ttf'));
@@ -668,23 +676,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -695,7 +693,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.install = install;
+exports.install = void 0;
 const os = __importStar(__nccwpck_require__(857));
 const path = __importStar(__nccwpck_require__(6928));
 const core = __importStar(__nccwpck_require__(7484));
@@ -802,6 +800,7 @@ function install(version) {
         return Promise.resolve(binPath);
     });
 }
+exports.install = install;
 
 
 /***/ }),
@@ -827,23 +826,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {

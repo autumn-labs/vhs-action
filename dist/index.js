@@ -886,6 +886,8 @@ function run() {
             const bin = yield intaller.install(version);
             core.info('Adding VHS to PATH');
             core.addPath(path.dirname(bin));
+            // Collect additional paths to be added to PATH
+            const additionalPaths = [path.dirname(bin)];
             // Add extra paths to PATH if specified
             if (extraPaths) {
                 const paths = extraPaths.split(',').map(p => p.trim());
@@ -894,6 +896,7 @@ function run() {
                     if (fs.existsSync(expandedPath)) {
                         core.info(`Adding ${expandedPath} to PATH`);
                         core.addPath(expandedPath);
+                        additionalPaths.push(expandedPath);
                     }
                     else {
                         core.warning(`Path ${expandedPath} does not exist, skipping`);
@@ -907,11 +910,22 @@ function run() {
             core.exportVariable('COLORTERM', 'truecolor');
             if (filePath) {
                 core.info('Running VHS');
-                // Set the options with working directory if provided
+                // Set up execution options
                 const options = {};
                 if (workingDirectory) {
                     options.cwd = workingDirectory;
                     core.info(`Using working directory: ${workingDirectory}`);
+                }
+                // Modify PATH environment variable for the child process
+                if (additionalPaths.length > 0) {
+                    // Create a modified path with our additional directories at the front
+                    const currentPath = process.env.PATH || '';
+                    const newPath = [...additionalPaths, currentPath].join(path.delimiter);
+                    core.info(`Setting PATH for VHS process: ${newPath}`);
+                    // Set up environment variables for the child process
+                    options.env = Object.assign(Object.assign({}, process.env), { PATH: newPath, 
+                        // Make sure CI is unset and COLORTERM is set
+                        CI: '', COLORTERM: 'truecolor' });
                 }
                 yield exec.exec(`${bin} ${filePath}`, [], options);
             }

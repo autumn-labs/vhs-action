@@ -62,9 +62,8 @@ export async function installTtyd(version?: string): Promise<string> {
       break
     }
     case 'linux': {
-      url = release.data.assets.find(asset =>
-        asset.name.endsWith('x86_64')
-      )?.browser_download_url
+      url = release.data.assets.find(asset => asset.name.endsWith('x86_64'))
+        ?.browser_download_url
       core.debug(`Installing ttyd ${version} on Linux from ${url}`)
       break
     }
@@ -192,17 +191,35 @@ export async function installLatestFfmpeg(): Promise<string> {
         owner: 'BtbN',
         repo: 'FFmpeg-Builds'
       })
+
+      // First try to find the master build
       for (const asset of release.data.assets) {
-        // ffmpeg-n5.1-latest-linux64-gpl-5.1.tar.xz
         if (
-          asset.name.startsWith('ffmpeg-n5.1') &&
-          asset.name.includes('linux64-gpl-5.1') &&
+          asset.name.startsWith('ffmpeg-master') &&
+          asset.name.includes('linux64-gpl') &&
+          !asset.name.includes('shared') &&
           asset.name.endsWith('.tar.xz')
         ) {
           url = asset.browser_download_url
           break
         }
       }
+
+      // If master build not found, try to find any versioned build (e.g., ffmpeg-n6.1)
+      if (!url) {
+        for (const asset of release.data.assets) {
+          if (
+            asset.name.startsWith('ffmpeg-n') &&
+            asset.name.includes('linux64-gpl') &&
+            !asset.name.includes('shared') &&
+            asset.name.endsWith('.tar.xz')
+          ) {
+            url = asset.browser_download_url
+            break
+          }
+        }
+      }
+
       extract = tc.extractTar
       flags.push('xJ', '--strip-components=1')
       break
@@ -213,17 +230,35 @@ export async function installLatestFfmpeg(): Promise<string> {
         owner: 'BtbN',
         repo: 'FFmpeg-Builds'
       })
+
+      // First try to find the master build
       for (const asset of release.data.assets) {
-        // ffmpeg-n5.1-latest-linux64-gpl-5.1.tar.xz
         if (
-          asset.name.startsWith('ffmpeg-n5.1') &&
-          asset.name.includes('win64-gpl-5.1') &&
+          asset.name.startsWith('ffmpeg-master') &&
+          asset.name.includes('win64-gpl') &&
+          !asset.name.includes('shared') &&
           asset.name.endsWith('.zip')
         ) {
           url = asset.browser_download_url
           break
         }
       }
+
+      // If master build not found, try to find any versioned build (e.g., ffmpeg-n6.1)
+      if (!url) {
+        for (const asset of release.data.assets) {
+          if (
+            asset.name.startsWith('ffmpeg-n') &&
+            asset.name.includes('win64-gpl') &&
+            !asset.name.includes('shared') &&
+            asset.name.endsWith('.zip')
+          ) {
+            url = asset.browser_download_url
+            break
+          }
+        }
+      }
+
       extract = tc.extractZip
       break
     }

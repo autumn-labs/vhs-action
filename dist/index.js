@@ -845,17 +845,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const fs = __importStar(__nccwpck_require__(9896));
 const path = __importStar(__nccwpck_require__(6928));
+const os = __importStar(__nccwpck_require__(857));
 const intaller = __importStar(__nccwpck_require__(8328));
 const deps = __importStar(__nccwpck_require__(2403));
 const fonts = __importStar(__nccwpck_require__(2662));
 const core = __importStar(__nccwpck_require__(7484));
 const exec = __importStar(__nccwpck_require__(5236));
+/**
+ * Expands a path that might contain a tilde (~) to represent the home directory
+ */
+function expandPath(inputPath) {
+    if (inputPath.startsWith('~/') || inputPath === '~') {
+        return inputPath.replace(/^~/, os.homedir());
+    }
+    return inputPath;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const version = core.getInput('version');
             const filePath = core.getInput('path');
             const workingDirectory = core.getInput('working-directory');
+            const extraPaths = core.getInput('extra-paths');
             // Fail fast if file does not exist.
             if (filePath) {
                 const resolvedPath = workingDirectory
@@ -875,6 +886,20 @@ function run() {
             const bin = yield intaller.install(version);
             core.info('Adding VHS to PATH');
             core.addPath(path.dirname(bin));
+            // Add extra paths to PATH if specified
+            if (extraPaths) {
+                const paths = extraPaths.split(',').map(p => p.trim());
+                for (const p of paths) {
+                    const expandedPath = expandPath(p);
+                    if (fs.existsSync(expandedPath)) {
+                        core.info(`Adding ${expandedPath} to PATH`);
+                        core.addPath(expandedPath);
+                    }
+                    else {
+                        core.warning(`Path ${expandedPath} does not exist, skipping`);
+                    }
+                }
+            }
             // Unset the CI variable to prevent Termenv from ignoring terminal ANSI
             // sequences.
             core.exportVariable('CI', '');
